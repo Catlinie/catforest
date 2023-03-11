@@ -1,0 +1,16 @@
+Server:
+  HttpPort: :8080
+Database:
+  DBType: mysql
+  Username: root
+  Password: 12345678
+  Host: 127.0.0.1:3306
+  CharSet: utf8
+  ParseTime: True
+  MaxIdleConns: 10
+  MaxOpenConns: 30
+  DBName: catforest_test01
+App:
+  LogSavePath: storage/log
+  LogFileName: app
+  LogFileExt: .log
