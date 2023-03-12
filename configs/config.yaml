@@ -11,6 +11,12 @@ Database:
   MaxOpenConns: 30
   DBName: catforest_test01
 App:
-  LogSavePath: storage/log
+  LogSavePath: storage/logs
   LogFileName: app
   LogFileExt: .log
+  MaxSize: 100
+  MaxAge: 1
+  MaxBackups: 20
+  Compress: True
+  EncoderType: JSON
+  EncoderConfigType: Development

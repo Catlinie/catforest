@@ -1,10 +1,12 @@
 package v1
 
 import (
+	"catlinie_test01/global"
 	"catlinie_test01/internal/service"
 	"catlinie_test01/pkg/app"
 	"catlinie_test01/pkg/errcode"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 type User struct{}
@@ -133,5 +135,6 @@ func (u User) SetInfo(c *gin.Context) {
 		return
 	}
 	code := errcode.ServerError.WithDetails("SetInfo.ShouldBind err")
+	global.Logger.Error("SetInfo.ShouldBind err", zap.String("test", "error"))
 	response.ToErrorResponse(code)
 }

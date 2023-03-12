@@ -52,7 +52,7 @@ func (d *Dao) GetEntireInfo(account, itype string) (*model.User, error) {
 	return user, nil
 }
 
-func (d *Dao) SetUserInfo(username, desc, master_name, url, account, itype string, gender uint8) error {
+func (d *Dao) SetUserInfo(username, desc, masterName, url, account, itype string, gender uint8) error {
 	return d.beginTrans(func() error {
 		auth, err := d.getSpecificAuth(account, itype)
 		if err != nil {
@@ -63,7 +63,7 @@ func (d *Dao) SetUserInfo(username, desc, master_name, url, account, itype strin
 				"username":    username,
 				"gender":      gender,
 				"desc":        desc,
-				"master_name": master_name,
+				"master_name": masterName,
 				"url":         url,
 			}).Error
 	})
