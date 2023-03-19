@@ -17,8 +17,8 @@ func (d *Dao) GetLoginInfo(account, itype string) (string, error) {
 func (d *Dao) CreateUserInfo(user *model.User, account, password, itype string) error {
 	// Create()里面要一个指针
 	return d.beginTrans(func() error {
-		var count int
-		err := d.Engine.Model(user).Where("account = ? && identty_type = ?", account, itype).Count(&count).Error
+		var count int64
+		err := d.Engine.Model(user).Where("account = ? && identity_type = ?", account, itype).Count(&count).Error
 		if err != nil || count > 0 {
 			return err
 		}
@@ -52,19 +52,15 @@ func (d *Dao) GetEntireInfo(account, itype string) (*model.User, error) {
 	return user, nil
 }
 
-func (d *Dao) SetUserInfo(username, desc, masterName, url, account, itype string, gender uint8) error {
+func (d *Dao) SetUserInfo(username, desc, masterName, url string, gender uint8) error {
 	return d.beginTrans(func() error {
-		auth, err := d.getSpecificAuth(account, itype)
-		if err != nil {
-			return err
-		}
-		return d.Engine.Table("users").Where("cid = ?", auth.Cid).Update(
-			map[string]interface{}{
-				"username":    username,
-				"gender":      gender,
-				"desc":        desc,
-				"master_name": masterName,
-				"url":         url,
+		return d.Engine.Table("users").Where("username = ?", username).Updates(
+			&model.User{
+				Username:   username,
+				Gender:     gender,
+				Desc:       desc,
+				MasterName: masterName,
+				Url:        url,
 			}).Error
 	})
 }

@@ -3,7 +3,8 @@ package dao
 import (
 	"catlinie_test01/pkg/setting"
 	"fmt"
-	"github.com/jinzhu/gorm"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 	"log"
 )
 
@@ -28,7 +29,9 @@ func NewDBEngine(databaseSetting setting.DatabaseSettings) (*gorm.DB, error) {
 		databaseSetting.ParseTime,
 	)
 	log.Println(s)
-	db, err := gorm.Open(databaseSetting.DBType, s)
+	// Open会初始化Config里面所有非bool类型的属性
+	// mysql.Open也只会做两件事，解析出DSN对象并且初始化Dialector的两个属性，分别是DSN、DSNConfig
+	db, err := gorm.Open(mysql.Open(s))
 	if err != nil {
 		return nil, err
 	}

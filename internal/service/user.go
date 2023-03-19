@@ -6,43 +6,43 @@ import (
 )
 
 type GetLoginInfoRequest struct {
-	Account string `form:"account"`
+	Account string `form:"account" binding:"required"`
 	//UnconfirmedPwd string
-	Itype string `form:"itype"`
+	Itype string `form:"itype" binding:"required"`
 }
 
 type CreateUserInfoRequest struct {
-	Username   string `form:"username"`
+	Username   string `form:"username" binding:"required"`
 	Desc       string `form:"desc" `
 	MasterName string `form:"master_name"`
 	Url        string `form:"url"`
-	Gender     uint8  `form:"gender"`
-	Account    string `form:"account"`
-	Password   string `form:"password"`
-	Itype      string `form:"itype"`
+	Gender     uint8  `form:"gender" binding:"oneof=0 1"`
+	Account    string `form:"account" binding:"required"`
+	Password   string `form:"password" binding:"required"`
+	Itype      string `form:"itype" binding:"required,oneof=desktop web phone"`
 }
 
 type GetEntireInfoRequest struct {
-	Account string `form:"account"`
-	Itype   string `form:"itype"`
+	Account string `form:"account" binding:"required"`
+	Itype   string `form:"itype" binding:"required,oneof=desktop web phone"`
 }
 
 type SetUserInfoRequest struct {
 	Username   string `form:"username"`
-	Desc       string `form:"desc" `
+	Desc       string `form:"desc"`
 	MasterName string `form:"master_name"`
 	Url        string `form:"url"`
 	Gender     uint8  `form:"gender"`
 	Password   string `form:"password"`
-	Account    string `form:"account"`
-	Itype      string `form:"itype"`
+	Account    string `form:"account" binding:"required"`
+	Itype      string `form:"itype" binding:"required,oneof=desktop web phone"`
 }
 
-func (s *Service) GetLoginInfo(param GetLoginInfoRequest) (string, error) {
+func (s *Service) GetLoginInfo(param *GetLoginInfoRequest) (string, error) {
 	return s.Engine.GetLoginInfo(param.Account, param.Itype)
 }
 
-func (s *Service) CreateUserInfo(param CreateUserInfoRequest) error {
+func (s *Service) CreateUserInfo(param *CreateUserInfoRequest) error {
 	return s.Engine.CreateUserInfo(
 		&model.User{
 			Cid:          100000,
@@ -60,18 +60,16 @@ func (s *Service) CreateUserInfo(param CreateUserInfoRequest) error {
 	)
 }
 
-func (s *Service) GetEntireInfo(param GetEntireInfoRequest) (*model.User, error) {
+func (s *Service) GetEntireInfo(param *GetEntireInfoRequest) (*model.User, error) {
 	return s.Engine.GetEntireInfo(param.Account, param.Itype)
 }
 
-func (s *Service) SetUserInfo(param SetUserInfoRequest) error {
+func (s *Service) SetUserInfo(param *SetUserInfoRequest) error {
 	return s.Engine.SetUserInfo(
-		param.Account,
 		param.Username,
-		param.Url,
 		param.Desc,
 		param.MasterName,
-		param.Itype,
+		param.Url,
 		param.Gender,
 	)
 }

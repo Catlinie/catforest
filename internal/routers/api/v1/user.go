@@ -5,8 +5,9 @@ import (
 	"catlinie_test01/internal/service"
 	"catlinie_test01/pkg/app"
 	"catlinie_test01/pkg/errcode"
+	"catlinie_test01/pkg/validator"
+	"fmt"
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 type User struct{}
@@ -26,12 +27,22 @@ func NewUser() User {
 // @Router  /user [get]
 func (u User) Login(c *gin.Context) {
 	svc := service.NewService(c)
-	rep := app.NewResponse(c)
-	pwd, err := svc.GetLoginInfo(service.GetLoginInfoRequest{Account: c.Query("account"), Itype: c.Query("itype")})
-	if err != nil {
-		rep.ToErrorResponse(errcode.ServerError)
+	response := app.NewResponse(c)
+	var request service.GetLoginInfoRequest
+	val, errs := validator.BindAndValid(c, &request)
+	if !val {
+		code := errcode.InvalidParams.WithDetails(errs.Error())
+		global.Logger.Error(errs.Error())
+		response.ToErrorResponse(code)
+		return
 	}
-	c.JSON(200, gin.H{
+
+	pwd, err := svc.GetLoginInfo(&request)
+	if err != nil {
+		code := errcode.ServerError.WithDetails(fmt.Sprintf("svc.GetLoginInfo err: %v", err))
+		response.ToErrorResponse(code)
+	}
+	response.ToResponse(map[string]any{
 		"pwd": pwd,
 	})
 
@@ -56,17 +67,22 @@ func (u User) Register(c *gin.Context) {
 	svc := service.NewService(c)
 	response := app.NewResponse(c)
 	var request service.CreateUserInfoRequest
-	if c.ShouldBind(&request) == nil {
-		err := svc.CreateUserInfo(request)
-		if err != nil {
-			errReq := errcode.ServerError.WithDetails(err.Error())
-			response.ToErrorResponse(errReq)
-			return
-		}
-	} else {
-		errReq := errcode.ServerError.WithDetails("Register.ShouldBind err")
-		response.ToErrorResponse(errReq)
+	val, errs := validator.BindAndValid(c, &request)
+	if !val {
+		code := errcode.InvalidParams.WithDetails(errs.Error())
+		global.Logger.Error(errs.Error())
+		response.ToErrorResponse(code)
+		return
 	}
+	err := svc.CreateUserInfo(&request)
+	if err != nil {
+		errReq := errcode.ServerError.WithDetails(fmt.Sprintf("svc.CreateUserInfo err: %v", err))
+		response.ToErrorResponse(errReq)
+		return
+	}
+	response.ToResponse(map[string]any{
+		"msg": "successfully!",
+	})
 }
 
 // Logout
@@ -93,19 +109,23 @@ func (u User) GetInfo(c *gin.Context) {
 	svc := service.NewService(c)
 	response := app.NewResponse(c)
 	var request service.GetEntireInfoRequest
-	if c.ShouldBind(&request) == nil {
-		info, err := svc.GetEntireInfo(request)
-		if err != nil {
-			code := errcode.ServerError.WithDetails(err.Error())
-			response.ToErrorResponse(code)
-			return
-		}
-		response.ToResponse(info)
+	val, errs := validator.BindAndValid(c, &request)
+	if !val {
+		code := errcode.InvalidParams.WithDetails(errs.Error())
+		global.Logger.Error(errs.Error())
+		response.ToErrorResponse(code)
 		return
 	}
-	code := errcode.ServerError.WithDetails("GetInfo.ShouldBind err")
-	response.ToErrorResponse(code)
 
+	info, err := svc.GetEntireInfo(&request)
+	if err != nil {
+		code := errcode.ServerError.WithDetails(fmt.Sprintf("GetInfo.ShouldBind err: %v", err))
+		response.ToErrorResponse(code)
+		return
+	}
+	response.ToResponse(map[string]any{
+		"msg": info,
+	})
 }
 
 // SetInfo
@@ -124,17 +144,19 @@ func (u User) SetInfo(c *gin.Context) {
 	svc := service.NewService(c)
 	response := app.NewResponse(c)
 	request := service.SetUserInfoRequest{}
-	if c.ShouldBind(&request) == nil {
-		err := svc.SetUserInfo(request)
-		if err != nil {
-			code := errcode.ServerError.WithDetails(err.Error())
-			response.ToErrorResponse(code)
-			return
-		}
-		response.ToResponse("success")
+	val, errs := validator.BindAndValid(c, &request)
+	if !val {
+		code := errcode.InvalidParams.WithDetails(errs.Error())
+		global.Logger.Error(errs.Error())
+		response.ToErrorResponse(code)
 		return
 	}
-	code := errcode.ServerError.WithDetails("SetInfo.ShouldBind err")
-	global.Logger.Error("SetInfo.ShouldBind err", zap.String("test", "error"))
-	response.ToErrorResponse(code)
+	err := svc.SetUserInfo(&request)
+	if err != nil {
+		code := errcode.ServerError.WithDetails(err.Error())
+		response.ToErrorResponse(code)
+		return
+	}
+	response.ToResponse(map[string]string{"msg": "success"})
+
 }
